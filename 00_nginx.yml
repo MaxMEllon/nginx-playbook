@@ -1,0 +1,22 @@
+# See: http://qiita.com/hiroq/items/420424bc500d89fd1cc8
+
+---
+- hosts: ALL
+  become: yes
+  vars:
+    nginx_pgp_url: http://nginx.org/keys/nginx_signing.key
+    nginx_repository_url: http://nginx.org/packages/ubuntu/
+  tasks:
+    - name : Add official nginx PGP key
+      apt_key: url={{nginx_pgp_url}} state=present
+    - name : Add official nginx repository
+      lineinfile : >
+        dest=/etc/apt/sources.list
+        line='{{item}} {{nginx_repository_url}} {{ansible_distribution_release}} nginx'
+      with_items:
+        - deb
+        - deb-src
+    - name : Run apt-get update
+      apt: update_cache=yes
+    - name : Install nginx
+      apt : name=nginx state=present
